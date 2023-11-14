@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>音频实时处理</title>
+    <style>
+        audio {
+            width: 100%;
+            max-width: 640px;
+            margin: 0 auto;
+            display: block;
+        }
+
+        button {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <audio id="audio" controls></audio>
+    <button onclick="changePitch()">改变音调</button>
+
+    <script>
+        var audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        var sourceNode;
+        var pitchShift = 8; // 调整这个值以改变音调，值越大音调越高
+
+        navigator.mediaDevices.getUserMedia({ audio: true })
+        .then(function (stream) {
+            var audio = document.getElementById('audio');
+            sourceNode = audioContext.createMediaStreamSource(stream);
+            sourceNode.connect(audioContext.destination);
+        })
+        .catch(function (error) {
+            console.log("Error accessing the microphone: ", error);
+        });
+
+        function changePitch() {
+            var processor = audioContext.createScriptProcessor(4096, 1, 1);
+
+            processor.onaudioprocess = function (event) {
+                var inputData = event.inputBuffer.getChannelData(0);
+                var outputData = event.outputBuffer.getChannelData(0);
+
+                for (var i = 0; i < inputData.length; i++) {
+                    // 简单的音调改变，可以根据需求使用更复杂的算法
+                    outputData[i] = inputData[i] * pitchShift;
+                }
+            };
+
+            sourceNode.disconnect();
+            sourceNode.connect(processor);
+            processor.connect(audioContext.destination);
+        }
+    </script>
+</body>
+</html>
