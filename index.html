@@ -28,7 +28,7 @@
     <script>
         var audioContext = new (window.AudioContext || window.webkitAudioContext)();
         var sourceNode;
-        var pitchShift = 8; // 调整这个值以改变音调，值越大音调越高
+        var pitchShift = 500; // 调整这个值以改变音调，值越大音调越高
 
         navigator.mediaDevices.getUserMedia({ audio: true })
         .then(function (stream) {
