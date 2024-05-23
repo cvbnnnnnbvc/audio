@@ -1,50 +1,281 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>音频实时处理</title>
-    <style>
-        audio {
-            width: 100%;
-            max-width: 640px;
-            margin: 0 auto;
-            display: block;
-            visibility: hidden;  /* 将音频元素隐藏，但仍占用页面空间 */
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>电台搜索器</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+<style>
+    .loader {
+        border: 8px solid #f3f3f3;
+        border-radius: 50%;
+        border-top: 8px solid #3498db;
+        width: 50px;
+        height: 50px;
+        animation: spin 1s linear infinite;
+        margin: 20px auto;
+    }
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    .loading-text {
+        text-align: center;
+        margin: 10px 0;
+        font-size: 16px;
+        color: #3498db;
+    }
+    .pagination {
+        margin-top: 20px;
+        text-align: center;
+    }
+    .pagination button {
+        margin: 0 5px;
+        padding: 5px 10px;
+        cursor: pointer;
+    }
+    .pagination .page-number {
+        margin: 0 2px;
+        padding: 5px 10px;
+        cursor: pointer;
+        display: inline-block;
+    }
+    .pagination .page-number.active {
+        font-weight: bold;
+        background-color: #3498db;
+        color: #fff;
+        border: 1px solid #3498db;
+    }
+    button {
+        border-radius: 5px;
+        border: none;
+        cursor: pointer;
+    }
+    #prevPage, #nextPage {
+        font-size: 20px;
+        font-weight: bold;
+        color: #3498db;
+        background-color: #fff;
+    }
+    .pagination {
+        bottom: 20px; 
+    }
+    #radio-form {
+        margin: 0 auto;
+        width: 170px;
+        border-radius: 20px;
+        padding: 8px;
+        border: 1px solid #b3b3b3;
+        color: #434343;
+        background-color: #ffffff;
+        box-shadow: 0 0 30px rgba(0, 0, 0, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    input {
+        border: none;
+        outline: none;
+        width: 130px;
+        height: 25px;
+        font-size: 15px;
+    }
+    #search {
+        background-color: transparent; 
+    }
+    #ph {
+        color: #2a55a5;
+        font-size: 28px;
+        text-align: center;
+    }
+    a {
+        color: #1c9a89;
+    }
+</style>
 </head>
-<body>
-    <audio id="audio" controls></audio>
+<body style="font-family: 'ZCOOL KuaiLe', sans-serif;">
+<p id="ph">全球电台搜索器</p>
+<form id="radio-form">
+    <input type="text" id="country" name="country" placeholder="地区代码，例：us" style="font-family: 'ZCOOL KuaiLe', sans-serif;">
+    <button type="submit" id="search">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="18" height="18" viewBox="0 0 24 24" stroke-width="3" stroke="#00abfb" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+            <path d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0" />
+            <path d="M21 21l-6 -6" />
+          </svg>
+    </button>
+</form>
+<div id="radio-stations"></div>
+<div id="loader" class="loader" style="display: none;"></div>
+<div id="loading-text" class="loading-text" style="display: none;">检索全球电台中...</div> <!-- 加载指示器外部的文字 -->
+<div id="pagination" class="pagination" style="display: none;">
+    <button id="prevPage">&lt;</button>
+    <div id="pageNumbers" style="display: inline-block;"></div>
+    <button id="nextPage">&gt;</button>
+</div>
+<script>
+    var form = document.getElementById('radio-form');
+    var radioStationsDiv = document.getElementById('radio-stations');
+    var loader = document.getElementById('loader');
+    var loadingText = document.getElementById('loading-text');
+    var paginationDiv = document.getElementById('pagination');
+    var prevPageButton = document.getElementById('prevPage');
+    var nextPageButton = document.getElementById('nextPage');
+    var pageNumbersDiv = document.getElementById('pageNumbers');
+    var currentPage = 1;
+    var resultsPerPage = 10;
+    var stationsData = [];
+    var totalPages = 0;
 
-    <script>
-        var audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        var sourceNode;
-        var pitchShift = 1.0; // 设置为 1.0 表示正常音调
+    form.addEventListener('submit', function(event) {
+        event.preventDefault();
+        var countryCode = document.getElementById('country').value;
+        radioStationsDiv.innerHTML = '';
+        loader.style.display = 'block';
+        loadingText.style.display = 'block';
+        paginationDiv.style.display = 'none';
+        currentPage = 1;
+        getRadioStations(countryCode);
+    });
+    prevPageButton.addEventListener('click', function() {
+        if (currentPage > 1) {
+            radioStationsDiv.innerHTML = '';
+            currentPage--;
+            loadPage(currentPage);
+        } else {
+            alert('已经是第一页');
+        }
+    });
 
-        navigator.mediaDevices.getUserMedia({ audio: true })
-        .then(function (stream) {
-            var audio = document.getElementById('audio');
-            sourceNode = audioContext.createMediaStreamSource(stream);
+    nextPageButton.addEventListener('click', function() {
+        if (currentPage < totalPages) {
+            radioStationsDiv.innerHTML = '';
+            currentPage++;
+            loadPage(currentPage);
+        } else {
+            alert('已经是最后一页');
+        }
+    });
 
-            var processor = audioContext.createScriptProcessor(4096, 1, 1);
+    function getRadioStations(countryCode) {
+        fetch(`https://de1.api.radio-browser.info/json/stations/bycountrycodeexact/${countryCode}`)
+            .then(response => response.json())
+            .then(data => {
+                stationsData = data;
+                totalPages = Math.ceil(stationsData.length / resultsPerPage);
+                displayRadioStations();
+                loader.style.display = 'none';
+                loadingText.style.display = 'none';
+            })
+            .catch(error => {
+                console.error('Error fetching radio stations:', error);
+                loader.style.display = 'none';
+                loadingText.style.display = 'none';
+            });
+    }
 
-            processor.onaudioprocess = function (event) {
-                var inputData = event.inputBuffer.getChannelData(0);
-                var outputData = event.outputBuffer.getChannelData(0);
+    function displayRadioStations() {
+        var startIndex = (currentPage - 1) * resultsPerPage;
+        var endIndex = startIndex + resultsPerPage;
 
-                for (var i = 0; i < inputData.length; i++) {
-                    // 将 pitchShift 设置为 1.0，即还原正常音调
-                    outputData[i] = inputData[i] * pitchShift;
-                }
-            };
+        if (stationsData.length > 0) {
+            for (var i = startIndex; i < endIndex && i < stationsData.length; i++) {
+                var station = stationsData[i];
+                var stationDiv = document.createElement('div');
+                stationDiv.innerHTML = `
+                    <p><strong>名称:</strong> ${station.name}</p>
+                    <p><strong>国家:</strong> ${station.country}</p>
+                    <p><strong>URL:</strong> <a href="${station.url_resolved}" target="_blank" style="word-wrap: break-word;">${station.url_resolved}</a></p>
+                    <hr>
+                `;
+                radioStationsDiv.appendChild(stationDiv);
+            }
+        } else {
+            radioStationsDiv.textContent = '未找到电台。';
+        }
 
-            sourceNode.connect(processor);
-            processor.connect(audioContext.destination);
-        })
-        .catch(function (error) {
-            console.log("Error accessing the microphone: ", error);
-        });
-    </script>
+        updatePagination();
+    }
+
+    function updatePagination() {
+        var totalResults = stationsData.length;
+        totalPages = Math.ceil(totalResults / resultsPerPage);
+
+        if (totalPages <= 1) {
+            paginationDiv.style.display = 'none';
+            return;
+        }
+
+        paginationDiv.style.display = 'block';
+        pageNumbersDiv.innerHTML = '';
+
+        var maxPagesToShow = 5;
+        var startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
+        var endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
+
+        if (endPage - startPage < maxPagesToShow - 1) {
+            startPage = Math.max(1, endPage - maxPagesToShow + 1);
+        }
+
+        if (startPage > 1) {
+            var firstPageButton = document.createElement('button');
+            firstPageButton.textContent = 1;
+            firstPageButton.className = 'page-number';
+            firstPageButton.addEventListener('click', function() {
+                radioStationsDiv.innerHTML = '';
+                currentPage = 1;
+                loadPage(currentPage);
+            });
+            pageNumbersDiv.appendChild(firstPageButton);
+
+            if (startPage > 2) {
+                var ellipsis = document.createElement('span');
+                ellipsis.textContent = '...';
+                pageNumbersDiv.appendChild(ellipsis);
+            }
+        }
+
+        for (var i = startPage; i <= endPage; i++) {
+            var pageNumberButton = document.createElement('button');
+            pageNumberButton.textContent = i;
+            pageNumberButton.className = 'page-number';
+            if (i === currentPage) {
+                pageNumberButton.classList.add('active');
+            }
+            pageNumberButton.addEventListener('click', function() {
+                radioStationsDiv.innerHTML = '';
+                currentPage = parseInt(this.textContent);
+                loadPage(currentPage);
+            });
+            pageNumbersDiv.appendChild(pageNumberButton);
+        }
+
+        if (endPage < totalPages) {
+            if (endPage < totalPages - 1) {
+                var ellipsis = document.createElement('span');
+                ellipsis.textContent = '...';
+                pageNumbersDiv.appendChild(ellipsis);
+            }
+            var lastPageButton = document.createElement('button');
+            lastPageButton.textContent = totalPages;
+            lastPageButton.className = 'page-number';
+            lastPageButton.addEventListener('click', function() {
+                radioStationsDiv.innerHTML = '';
+                currentPage = totalPages;
+                loadPage(currentPage);
+            });
+            pageNumbersDiv.appendChild(lastPageButton);
+        }
+
+        prevPageButton.disabled = (currentPage === 1);
+        nextPageButton.disabled = (currentPage === totalPages);
+    }
+
+    function loadPage(page) {
+        displayRadioStations();
+    }
+</script>
 </body>
 </html>
