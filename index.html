@@ -67,7 +67,7 @@
         background-color: #fff;
     }
     .pagination {
-        bottom: 20px; 
+        margin-bottom: 40px;
     }
     #radio-form {
         margin: 0 auto;
@@ -200,6 +200,8 @@
                 stationDiv.innerHTML = `
                     <p><strong>名称:</strong> ${station.name}</p>
                     <p><strong>国家:</strong> ${station.country}</p>
+                    <p><strong>热度:</strong> ${station.clickcount}</p>
+                    <p><strong>最近播放:</strong> ${station.clicktimestamp}</p>
                     <p><strong>URL:</strong> <a href="${station.url_resolved}" target="_blank" style="word-wrap: break-word;">${station.url_resolved}</a></p>
                     <hr>
                 `;
