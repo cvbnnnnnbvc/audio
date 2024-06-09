@@ -1,0 +1,82 @@
+
+<!doctype html>
+<html lang="zh-CN">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>摩斯音频解码器</title>
+    <link rel="stylesheet" href="css/c7552.css" media="all" />
+    <link rel="stylesheet" href="css/454f5.css" media="all" />
+	<style>
+		#result:focus {
+            border-color: #66afe9;
+            outline: 0;
+            -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba(102, 175, 233, .6);
+            box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba(102, 175, 233, .6);
+        }
+	</style>
+<script  src="js/818c0.js"></script>
+</head>
+<body>
+		<div class="main-container"><section>
+							<div class="container"><div class="row"><div class="col-lg-10 col-sm-12 col-lg-offset-1 text-center">				
+								<h2>摩斯音频解码器</h2>
+					        	<p class="lead mb0">从音频中解码摩斯密码</p>
+							</div></div></div></section><div class="tlg-page-wrapper">
+	<a id="home" href="#"></a>
+	<section id="audio-decoder" class="vc_row wpb_row vc_row-fluid text-center bg-light pt0 pb0 not-equal not-color"><div class=" container "><div class="row "><div class="wpb_column vc_column_container vc_col-sm-2"><div class="vc_column-inner vc_custom_1687765609819"><div class="wpb_wrapper"></div></div></div><div class="wpb_column vc_column_container vc_col-sm-8"><div class="vc_column-inner"><div class="wpb_wrapper">
+	<div class="wpb_raw_code wpb_content_element wpb_raw_html" >
+		<div class="wpb_wrapper">
+			<div style="margin-bottom:15px;">
+	<input id="fileInput" type="file" accept="audio/*" style="display:none">
+	<audio id="audioPlayer" preload="none" style="display:none;"></audio> 
+	<input id="decodeText" type="hidden" style="display:none">
+	<div id="fileName" style="display:none;font-size:20px;line-height:35px;font-weight:500;"></div>
+	<a id="upload-btn" class="btn-lg text-center mr-0 mb0 mt8" href="javascript:void(1);" target="_self" title="上传文件" 
+	style="border: 1px solid #007bff;
+	color: #007bff;
+	background-color: transparent;
+	padding: 10px 20px;
+	font-size: 16px;
+	cursor: pointer;
+	border-radius: 5px;">上传</a>
+	<a id="play-btn" class="btn-lg text-center mr-0 mb0 mt8" href="javascript:void(1);" target="_self" disabled="true" title="播放摩尔斯电码音频" 
+	style="border: 1px solid #007bff;
+	color: #007bff;
+	background-color: transparent;
+	padding: 10px 20px;
+	font-size: 16px;
+	cursor: pointer;
+	border-radius: 5px;">播放</a>
+	<a id="decode-btn" class="btn-lg text-center mr-0 mb0 mt8" href="javascript:void(1);" target="_self" disabled="true" title="解码摩尔斯电码" 
+	style="border: 1px solid #007bff;
+	color: #007bff;
+	background-color: transparent;
+	padding: 10px 20px;
+	font-size: 16px;
+	cursor: pointer;
+	border-radius: 5px;">解码</a>		
+</div></div></div>
+	<div class="wpb_raw_code wpb_content_element wpb_raw_html" >
+		<div class="wpb_wrapper">
+			<div>
+<textarea name="result" id="result" value="" placeholder="解码结果" title="解码结果" readonly="true" style="margin:0 0 3px;height:250px;padding-bottom:50px;"/></textarea>
+</div>
+<div class="textarea-btn">
+	<a style="color: #157dfc;border-style: none;" id="title-btn" class="btn btn-xs btn-sm-sm" href="javascript:void(1);" target="_self">首字母大写</a>
+	<a style="color: #157dfc;border-style: none;" id="lower-btn" class="btn btn-xs btn-sm-sm" href="javascript:void(1);" target="_self">小写</a>
+	<a style="color: #157dfc;border-style: none;" id="upper-btn" class="btn btn-xs btn-sm-sm" href="javascript:void(1);" target="_self">大写</a>
+	<a style="color: #157dfc;border-style: none;" id="copy-btn" class="btn btn-xs btn-sm-sm" href="javascript:void(1);" target="_self" data-clipboard-action="copy" data-clipboard-target="#result">复制</a>
+	<a style="color: #157dfc;border-style: none;" id="clear-btn" class="btn btn-xs btn-sm-sm" href="javascript:void(1);" target="_self">清除</a>
+</div></div></div></div></div></div>
+<a href="0.html">生成</a>
+<script>	
+    jQuery(function(){  
+       pgObj.init3({p:'播放',s:'停止',u:'上传',d:'解码'});
+    });
+</script>
+<script type="text/html" id="wpb-modifications"></script>
+<script  src="js/5839d.js"></script>
+<script  src="js/f15e7.js"></script>
+</body>
+</html>
